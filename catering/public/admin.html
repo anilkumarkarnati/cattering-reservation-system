@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - CateringPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body { font-family: 'Montserrat', Arial, sans-serif; background: #f7f7f7; margin: 0; }
+    
+    /* Admin Login */
+    .admin-login { 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      background: linear-gradient(120deg, #ff6b35 0%, #f7b32b 100%);
+    }
+    .login-card { 
+      background: #fff; 
+      padding: 2rem; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+      width: 100%; 
+      max-width: 400px; 
+    }
+    .login-card h1 { text-align: center; color: #ff6b35; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500; }
+    .form-group input { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+    .form-group input:focus { outline: none; border-color: #ff6b35; }
+    .login-btn { width: 100%; padding: 1rem; background: #ff6b35; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; }
+    .login-btn:hover { background: #f7b32b; }
+    
+    /* Admin Dashboard */
+    .admin-dashboard { display: none; }
+    .admin-header { background: #fff; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .admin-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .admin-brand { font-size: 1.5rem; font-weight: bold; color: #ff6b35; }
+    .admin-menu { display: flex; gap: 1rem; }
+    .admin-btn { padding: 0.5rem 1rem; background: #ff6b35; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+    .admin-btn:hover { background: #f7b32b; }
+    .logout-btn { background: #dc3545; }
+    .logout-btn:hover { background: #c82333; }
+    
+    .admin-content { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    .stat-card h3 { color: #ff6b35; margin-bottom: 0.5rem; }
+    .stat-card .number { font-size: 2rem; font-weight: bold; color: #333; }
+    
+    .section { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 2rem; }
+    .section h2 { color: #ff6b35; margin-bottom: 1.5rem; }
+    
+    /* Product Management */
+    .product-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .product-form .form-group:nth-child(3) { grid-column: 1 / -1; }
+    .product-form .form-group:nth-child(4) { grid-column: 1 / -1; }
+    .product-form .form-group:nth-child(5) { grid-column: 1 / -1; }
+    .product-form .form-group:nth-child(6) { grid-column: 1 / -1; }
+    
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .product-item { border: 1px solid #ddd; padding: 1rem; border-radius: 8px; }
+    .product-item img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; }
+    .product-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .btn-edit { background: #28a745; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+    .btn-delete { background: #dc3545; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+    
+    /* Orders Table */
+    .orders-table { width: 100%; border-collapse: collapse; }
+    .orders-table th, .orders-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #ddd; }
+    .orders-table th { background: #f8f9fa; font-weight: 600; }
+    .status-pending { color: #ffc107; }
+    .status-confirmed { color: #28a745; }
+    .status-delivered { color: #17a2b8; }
+    .status-cancelled { color: #dc3545; }
+    
+    /* Alerts */
+    .alert { padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+    .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    
+    @media (max-width: 768px) {
+      .product-form { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .admin-menu { flex-direction: column; }
+    }
+  </style>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtGS7QApfE9FHilwYxNEiq0tm870a56Ok",
+      authDomain: "caterhub-7475e.firebaseapp.com",
+      projectId: "caterhub-7475e",
+      storageBucket: "caterhub-7475e.firebasestorage.app",
+      messagingSenderId: "331449717593",
+      appId: "1:331449717593:web:dcf13f07ec0dbd00f23248",
+      measurementId: "G-QRJS8CDBVQ"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Role-based UI logic for admin.html
+    firebase.auth().onAuthStateChanged(async (user) => {
+      console.log("Auth state changed. User:", user);
+      if (user) {
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const role = userDoc.data()?.role || 'user';
+        console.log("Fetched role from Firestore:", role);
+        if (role === 'admin') {
+          showAdminDashboard();
+          loadDashboardData();
+        } else {
+          // Hide all admin sections and redirect to user dashboard
+          document.getElementById('admin-dashboard').style.display = 'none';
+          document.getElementById('admin-login').style.display = 'none';
+          alert('Access denied: Admins only. Redirecting to user dashboard.');
+          window.location.href = 'user-dashboard.html';
+        }
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Admin Login -->
+  <div id="admin-login" class="admin-login">
+    <div class="login-card">
+      <h1><i class="fas fa-user-shield"></i> Admin Login</h1>
+      <form id="admin-login-form">
+        <div class="form-group">
+          <label for="admin-email">Email</label>
+          <input type="email" id="admin-email" required>
+        </div>
+        <div class="form-group">
+          <label for="admin-password">Password</label>
+          <input type="password" id="admin-password" required>
+        </div>
+        <button type="submit" class="login-btn">Login as Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="admin-dashboard" class="admin-dashboard">
+    <header class="admin-header">
+      <nav class="admin-nav">
+        <div class="admin-brand">🍽️ Admin Dashboard</div>
+        <div class="admin-menu">
+          <button class="admin-btn" onclick="showSection('dashboard')">Dashboard</button>
+          <button class="admin-btn" onclick="showSection('products')">Products</button>
+          <button class="admin-btn" onclick="showSection('orders')">Orders</button>
+          <button class="admin-btn logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </nav>
+    </header>
+
+    <div class="admin-content">
+      <!-- Dashboard Section -->
+      <div id="dashboard-section" class="section">
+        <h2>Dashboard Overview</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Products</h3>
+            <div class="number" id="total-products">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Orders</h3>
+            <div class="number" id="total-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Pending Orders</h3>
+            <div class="number" id="pending-orders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="number" id="total-revenue">₹0</div>
+          </div>
+        </div>
+        <div id="product-analytics"></div>
+        <div id="order-analytics"></div>
+      </div>
+
+      <!-- Products Section -->
+      <div id="products-section" class="section" style="display: none;">
+        <h2>Product Management</h2>
+        <form id="product-form" class="product-form">
+          <div class="form-group">
+            <label for="product-name">Product Name</label>
+            <input type="text" id="product-name" required>
+          </div>
+          <div class="form-group">
+            <label for="product-price">Price (₹)</label>
+            <input type="number" id="product-price" required>
+          </div>
+          <div class="form-group">
+            <label for="product-description">Description</label>
+            <textarea id="product-description" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="product-category">Category</label>
+            <select id="product-category" required>
+              <option value="">Select Category</option>
+              <option value="appetizers">Appetizers</option>
+              <option value="main-course">Main Course</option>
+              <option value="desserts">Desserts</option>
+              <option value="beverages">Beverages</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="product-image">Image URL</label>
+            <input type="url" id="product-image" placeholder="https://example.com/image.jpg">
+          </div>
+          <div class="form-group">
+            <button type="submit" class="admin-btn">Add Product</button>
+          </div>
+        </form>
+        
+        <h3>Existing Products</h3>
+        <div id="products-grid" class="products-grid"></div>
+
+        <h3 style="margin-top:2rem;">My Products</h3>
+        <form id="my-products-form">
+          <button type="button" class="admin-btn" id="delete-selected-btn" style="margin-bottom:1rem;">Delete Selected</button>
+          <div id="my-products-list"></div>
+        </form>
+      </div>
+
+      <!-- Orders Section -->
+      <div id="orders-section" class="section" style="display: none;">
+        <h2>Order Management</h2>
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAdmin = null;
+    let products = [];
+    let orders = [];
+
+    // Check admin status on page load
+    firebase.auth().onAuthStateChanged(async (user) => {
+      console.log("Auth state changed. User:", user);
+      if (user) {
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const role = userDoc.data()?.role || 'user';
+        console.log("Fetched role from Firestore:", role);
+        if (role === 'admin') {
+          currentAdmin = user;
+          console.log("Role is admin. Showing dashboard.");
+          showAdminDashboard();
+          loadDashboardData();
+        } else {
+          console.log("Role is not admin. Showing login.");
+          showAdminLogin();
+        }
+      } else {
+        console.log("No user. Showing login.");
+        showAdminLogin();
+      }
+    });
+
+    // Admin login form
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('admin-email').value;
+      const password = document.getElementById('admin-password').value;
+
+      try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        showAlert('Admin login successful!', 'success');
+      } catch (error) {
+        showAlert('Admin login failed: ' + error.message, 'error');
+      }
+    });
+
+    function showAdminDashboard() {
+      console.log("showAdminDashboard called");
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-dashboard').style.display = 'block';
+    }
+
+    function showAdminLogin() {
+      console.log("showAdminLogin called");
+      document.getElementById('admin-login').style.display = 'flex';
+      document.getElementById('admin-dashboard').style.display = 'none';
+    }
+
+    function showSection(sectionName) {
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show selected section
+      document.getElementById(sectionName + '-section').style.display = 'block';
+      
+      // Load data for the section
+      if (sectionName === 'products') {
+        loadProducts();
+      } else if (sectionName === 'orders') {
+        loadOrders();
+      }
+    }
+
+    async function loadDashboardData() {
+      try {
+        // Load products count
+        const productsSnapshot = await firebase.firestore().collection('products').get();
+        document.getElementById('total-products').textContent = productsSnapshot.size;
+
+        // Analytics: count local/featured/pending/approved
+        let localCount = 0, featuredCount = 0, pendingCount = 0, approvedCount = 0;
+        productsSnapshot.forEach(doc => {
+          const p = doc.data();
+          if (p.tag === 'local') localCount++;
+          if (p.tag === 'featured') featuredCount++;
+          if (p.status === 'pending') pendingCount++;
+          if (p.status === 'active') approvedCount++;
+        });
+        // Show analytics in dashboard
+        let analyticsDiv = document.getElementById('product-analytics');
+        if (!analyticsDiv) {
+          analyticsDiv = document.createElement('div');
+          analyticsDiv.id = 'product-analytics';
+          analyticsDiv.style.margin = '1rem 0';
+          document.getElementById('dashboard-section').appendChild(analyticsDiv);
+        }
+        analyticsDiv.innerHTML = `
+          <strong>Local Products:</strong> ${localCount} &nbsp; | &nbsp;
+          <strong>Featured Products:</strong> ${featuredCount} &nbsp; | &nbsp;
+          <strong>Pending Approval:</strong> ${pendingCount} &nbsp; | &nbsp;
+          <strong>Approved:</strong> ${approvedCount}
+        `;
+
+        // Load orders data
+        const ordersSnapshot = await firebase.firestore().collection('orders').get();
+        document.getElementById('total-orders').textContent = ordersSnapshot.size;
+        
+        let pendingOrderCount = 0;
+        let totalRevenue = 0;
+        let localOrderCount = 0, featuredOrderCount = 0;
+        
+        ordersSnapshot.forEach(doc => {
+          const order = doc.data();
+          if (order.status === 'pending') pendingOrderCount++;
+          totalRevenue += order.total || 0;
+          // Count orders for local/featured products
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+              if (item.tag === 'local') localOrderCount++;
+              if (item.tag === 'featured') featuredOrderCount++;
+            });
+          }
+        });
+        
+        document.getElementById('pending-orders').textContent = pendingOrderCount;
+        document.getElementById('total-revenue').textContent = '₹' + totalRevenue.toFixed(2);
+        // Show order analytics
+        let orderAnalyticsDiv = document.getElementById('order-analytics');
+        if (!orderAnalyticsDiv) {
+          orderAnalyticsDiv = document.createElement('div');
+          orderAnalyticsDiv.id = 'order-analytics';
+          orderAnalyticsDiv.style.margin = '1rem 0';
+          document.getElementById('dashboard-section').appendChild(orderAnalyticsDiv);
+        }
+        orderAnalyticsDiv.innerHTML = `
+          <strong>Orders for Local Products:</strong> ${localOrderCount} &nbsp; | &nbsp;
+          <strong>Orders for Featured Products:</strong> ${featuredOrderCount}
+        `;
+        
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showAlert('Error loading dashboard data', 'error');
+      }
+    }
+
+    async function loadProducts() {
+      try {
+        const snapshot = await firebase.firestore().collection('products').get();
+        products = [];
+        snapshot.forEach(doc => {
+          products.push({ id: doc.id, ...doc.data() });
+        });
+        renderProducts();
+        await loadMyProducts();
+      } catch (error) {
+        console.error('Error loading products:', error);
+        showAlert('Error loading products', 'error');
+      }
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('products-grid');
+      grid.innerHTML = products.map(product => `
+        <div class="product-item">
+          <img src="${product.imageUrl || 'https://via.placeholder.com/300x150?text=No+Image'}" alt="${product.name}">
+          <h4>${product.name}
+            ${product.tag ? `<span class='badge badge-${product.tag}'>${product.tag.charAt(0).toUpperCase() + product.tag.slice(1)}</span>` : ''}
+            ${product.status === 'pending' ? `<span class='badge badge-pending'>Pending</span>` : ''}
+          </h4>
+          <p>${product.description}</p>
+          <p><strong>Price:</strong> ₹${product.price}</p>
+          <p><strong>Category:</strong> ${product.category}</p>
+          <div class="product-actions">
+            ${product.status === 'pending' ? `<button class='admin-btn' onclick="approveProduct('${product.id}')">Approve</button>` : ''}
+            <button class="btn-edit" onclick="editProduct('${product.id}')">Edit</button>
+            <button class="btn-delete" onclick="deleteProduct('${product.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadOrders() {
+      try {
+        const snapshot = await firebase.firestore().collection('orders').get();
+        orders = [];
+        snapshot.forEach(doc => {
+          orders.push({ id: doc.id, ...doc.data() });
+        });
+        renderOrders();
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        showAlert('Error loading orders', 'error');
+      }
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = orders.map(order => `
+        <tr>
+          <td>${order.orderNumber || order.id}</td>
+          <td>${order.customerName || order.userEmail}</td>
+          <td>${order.items ? order.items.length : 0} items</td>
+          <td>₹${order.total || 0}</td>
+          <td><span class="status-${order.status}">${order.status}</span></td>
+          <td>${order.createdAt ? new Date(order.createdAt.toDate()).toLocaleDateString() : 'N/A'}</td>
+          <td>
+            <button class="admin-btn" onclick="updateOrderStatus('${order.id}', 'confirmed')">Confirm</button>
+            <button class="admin-btn" onclick="updateOrderStatus('${order.id}', 'delivered')">Deliver</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Product form submission
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const productData = {
+        name: document.getElementById('product-name').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        description: document.getElementById('product-description').value,
+        category: document.getElementById('product-category').value,
+        imageUrl: document.getElementById('product-image').value,
+        status: 'active',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: currentAdmin.uid
+      };
+
+      try {
+        await firebase.firestore().collection('products').add(productData);
+        showAlert('Product added successfully!', 'success');
+        document.getElementById('product-form').reset();
+        loadProducts();
+        loadDashboardData();
+      } catch (error) {
+        console.error('Error adding product:', error);
+        showAlert('Error adding product', 'error');
+      }
+    });
+
+    async function deleteProduct(productId) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      
+      try {
+        await firebase.firestore().collection('products').doc(productId).delete();
+        showAlert('Product deleted successfully!', 'success');
+        loadProducts();
+        loadDashboardData();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        showAlert('Error deleting product', 'error');
+      }
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+      try {
+        await firebase.firestore().collection('orders').doc(orderId).update({
+          status: newStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedBy: currentAdmin.uid
+        });
+        showAlert('Order status updated successfully!', 'success');
+        loadOrders();
+        loadDashboardData();
+      } catch (error) {
+        console.error('Error updating order status:', error);
+        showAlert('Error updating order status', 'error');
+      }
+    }
+
+    async function approveProduct(productId) {
+      try {
+        await firebase.firestore().collection('products').doc(productId).update({ status: 'active' });
+        showAlert('Product approved!', 'success');
+        loadProducts();
+        loadDashboardData();
+      } catch (error) {
+        showAlert('Error approving product', 'error');
+      }
+    }
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        showAlert('Logged out successfully!', 'success');
+        window.location.href = 'index.html';
+      }).catch((error) => {
+        showAlert('Error logging out', 'error');
+      });
+    }
+
+    function showAlert(message, type = 'info') {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alert.style.position = 'fixed';
+      alert.style.top = '20px';
+      alert.style.right = '20px';
+      alert.style.zIndex = '3000';
+      alert.style.minWidth = '300px';
+      
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    // Add badge styles
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 8px; font-size: 0.8em; font-weight: 600; }
+      .badge-featured { background: #ff6b35; color: #fff; }
+      .badge-local { background: #28a745; color: #fff; }
+      .badge-pending { background: #ffc107; color: #333; }
+    `;
+    document.head.appendChild(style);
+
+    // Load and render products added by the current admin
+    async function loadMyProducts() {
+      if (!currentAdmin) return;
+      const snapshot = await firebase.firestore().collection('products').where('createdBy', '==', currentAdmin.uid).get();
+      const myProducts = [];
+      snapshot.forEach(doc => {
+        myProducts.push({ id: doc.id, ...doc.data() });
+      });
+      renderMyProducts(myProducts);
+    }
+
+    function renderMyProducts(products) {
+      const list = document.getElementById('my-products-list');
+      if (!products.length) {
+        list.innerHTML = '<p style="color:#888;">No products added by you yet.</p>';
+        return;
+      }
+      list.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th><input type='checkbox' id='select-all-products'></th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${products.map(product => `
+              <tr>
+                <td><input type='checkbox' class='product-checkbox' value='${product.id}'></td>
+                <td>${product.name}</td>
+                <td>${product.category}</td>
+                <td>${product.status}</td>
+                <td>
+                  <button type='button' class='btn-edit' onclick="editProduct('${product.id}')">Edit</button>
+                  <button type='button' class='btn-delete' onclick="deleteProduct('${product.id}')">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      // Select all checkbox logic
+      document.getElementById('select-all-products').onclick = function() {
+        document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = this.checked);
+      };
+    }
+
+    // Delete selected products
+    document.getElementById('delete-selected-btn').onclick = async function() {
+      const checked = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.value);
+      if (!checked.length) {
+        showAlert('No products selected.', 'error');
+        return;
+      }
+      if (!confirm('Are you sure you want to delete the selected products?')) return;
+      try {
+        const batch = firebase.firestore().batch();
+        checked.forEach(id => {
+          const ref = firebase.firestore().collection('products').doc(id);
+          batch.delete(ref);
+        });
+        await batch.commit();
+        showAlert('Selected products deleted!', 'success');
+        loadMyProducts();
+        loadProducts();
+      } catch (error) {
+        showAlert('Error deleting products', 'error');
+      }
+    };
+
+    // Initialize dashboard
+    showSection('dashboard');
+  </script>
+</body>
+</html> 

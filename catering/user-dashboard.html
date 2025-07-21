@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - CaterHub</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/user-dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-utensils"></i>
+                <span>CaterHub</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#products" class="nav-link">Menu</a>
+                <div class="user-menu">
+                    <span id="user-name"></span>
+                    <button class="btn-secondary" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <ul class="dashboard-menu">
+                <li><a href="#profile" class="menu-link active" data-section="profile">
+                    <i class="fas fa-user"></i> My Profile
+                </a></li>
+                <li><a href="#orders" class="menu-link" data-section="orders">
+                    <i class="fas fa-shopping-bag"></i> My Orders
+                </a></li>
+                <li><a href="#cart" class="menu-link" data-section="cart">
+                    <i class="fas fa-shopping-cart"></i> My Cart
+                </a></li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main">
+            <!-- Profile Section -->
+            <section id="profile-section" class="dashboard-section active">
+                <h2>My Profile</h2>
+                <div class="profile-card">
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label for="profile-name">Full Name:</label>
+                            <input type="text" id="profile-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-email">Email:</label>
+                            <input type="email" id="profile-email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-phone">Phone:</label>
+                            <input type="tel" id="profile-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-address">Address:</label>
+                            <textarea id="profile-address" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders-section" class="dashboard-section">
+                <h2>My Orders</h2>
+                <div id="user-orders">
+                    <!-- Orders will be loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Cart Section -->
+            <section id="cart-section" class="dashboard-section">
+                <h2>My Cart</h2>
+                <div id="user-cart">
+                    <!-- Cart items will be loaded dynamically -->
+                </div>
+                <div class="cart-total">
+                    <h3>Total: ₹<span id="cart-total">0</span></h3>
+                    <button class="btn-primary" onclick="placeOrder()">Place Order</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/user-dashboard.js"></script>
+    <script src="js/logger.js"></script>
+</body>
+</html>

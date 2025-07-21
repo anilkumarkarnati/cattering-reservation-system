@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard - CateringPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body { font-family: 'Montserrat', Arial, sans-serif; background: #f7f7f7; margin: 0; }
+    
+    /* Header */
+    .header { background: #fff; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .brand { font-size: 1.5rem; font-weight: bold; color: #ff6b35; }
+    .nav-menu { display: flex; gap: 2rem; align-items: center; }
+    .nav-actions { display: flex; gap: 1.2rem; align-items: center; margin-left: 2rem; }
+    .nav-link { text-decoration: none; color: #333; font-weight: 500; }
+    .nav-link:hover { color: #ff6b35; }
+    .logout-btn { background: #dc3545; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
+    .cart-icon { position: relative; display: flex; align-items: center; justify-content: center; height: 40px; }
+    .cart-icon i { font-size: 1.3rem; vertical-align: middle; }
+    .cart-count { position: absolute; top: 2px; right: -10px; background: #dc3545; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    
+    /* Main Content */
+    .main-content { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .section h2 { color: #ff6b35; margin-bottom: 1.5rem; }
+    
+    /* Profile Form */
+    .profile-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .profile-form .form-group:nth-child(3) { grid-column: 1 / -1; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #ff6b35; }
+    .btn { padding: 0.8rem 1.5rem; background: #ff6b35; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
+    .btn:hover { background: #f7b32b; }
+    
+    /* Cart */
+    .cart-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 1rem; }
+    .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-weight: 600; margin-bottom: 0.5rem; }
+    .cart-item-price { color: #ff6b35; font-weight: 600; }
+    .quantity-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .quantity-btn { background: #f8f9fa; border: 1px solid #ddd; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; }
+    .quantity-btn:hover { background: #e9ecef; }
+    .remove-btn { background: #dc3545; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+    .cart-summary { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+    .checkout-btn { width: 100%; margin-top: 1rem; }
+    
+    /* Orders */
+    .order-card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .order-number { font-weight: 600; color: #ff6b35; }
+    .order-status { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; font-weight: 500; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-delivered { background: #d1ecf1; color: #0c5460; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .order-items { margin-bottom: 1rem; }
+    .order-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+    .order-total { font-weight: 600; color: #ff6b35; }
+    
+    /* Alerts */
+    .alert { padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+    .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    
+    /* Products Grid */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .product-card { border: 1px solid #eee; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .product-image { width: 100%; height: 200px; object-fit: cover; }
+    .product-info { padding: 15px; }
+    .product-name { font-size: 1.2rem; margin-bottom: 8px; color: #333; }
+    .product-description { font-size: 0.9rem; color: #666; height: 40px; overflow: hidden; text-overflow: ellipsis; margin-bottom: 10px; }
+    .product-price { font-size: 1.1rem; font-weight: 600; color: #ff6b35; margin-bottom: 15px; }
+    .product-actions { display: flex; gap: 10px; }
+    .btn-add-cart { background: #ff6b35; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-add-cart:hover { background: #f7b32b; }
+    
+    /* Add status badge styles */
+    .status-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.9em; font-weight: 600; margin-left: 5px; }
+    .status-badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .status-badge-confirmed { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .status-badge-delivered { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    .status-badge-cancelled { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    
+    /* Full-width hero for dashboard home */
+    .dashboard-hero-wrapper { display: none; }
+    .dashboard-hero-wrapper.active { display: block; }
+    .dashboard { display: block; }
+    .dashboard.hide { display: none !important; }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .profile-form { grid-template-columns: 1fr; }
+      .nav-menu { flex-direction: column; gap: 1rem; align-items: stretch; }
+      .nav-actions { flex-direction: column; gap: 0.5rem; margin-left: 0; }
+    }
+  </style>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtGS7QApfE9FHilwYxNEiq0tm870a56Ok",
+      authDomain: "caterhub-7475e.firebaseapp.com",
+      projectId: "caterhub-7475e",
+      storageBucket: "caterhub-7475e.firebasestorage.app",
+      messagingSenderId: "331449717593",
+      appId: "1:331449717593:web:dcf13f07ec0dbd00f23248",
+      measurementId: "G-QRJS8CDBVQ"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Role-based UI logic for user-dashboard.html
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        const role = userDoc.data()?.role || 'user';
+        if (role !== 'user') {
+          // Hide user-only sections and redirect to admin dashboard
+          document.querySelector('.dashboard').style.display = 'none';
+          alert('Access denied: Users only. Redirecting to admin dashboard.');
+          window.location.href = 'admin.html';
+        }
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <div class="brand">🍽️ CateringPro</div>
+      <div class="nav-menu">
+        <a href="#" class="nav-link" onclick="showSection('home', event)">Home</a>
+        <a href="#" class="nav-link" onclick="showSection('browse-products', event)">Products</a>
+        <a href="#" class="nav-link" onclick="showSection('profile', event)">Profile</a>
+        <a href="#" class="nav-link" onclick="showSection('cart', event)">Cart</a>
+        <a href="#" class="nav-link" onclick="showSection('orders', event)">Orders</a>
+        <a href="#" class="nav-link" onclick="showSection('user-product-upload', event)">Upload Product</a>
+        <div class="nav-actions">
+          <span class="cart-icon" onclick="showSection('cart', event)">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count" id="cart-count">0</span>
+          </span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content: All sections are now full-width, no dashboard/sidebar -->
+  <main class="main-content">
+    <!-- Home Section (Hero, About, etc.) -->
+    <div id="home-section" class="section active">
+      <section class="hero" style="text-align: center; padding: 4rem 2rem; background: linear-gradient(135deg, #ff6b35 0%, #f7b32b 100%); color: white; border-radius: 12px; margin-bottom: 3rem;">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem;">Traditional Indian Catering</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">Discover authentic flavors from rural India, connecting local caterers with global customers</p>
+        <div class="hero-buttons" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a href="#" class="btn" style="background: white; color: #ff6b35; text-decoration: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 600;" onclick="showSection('browse-products', event)">Explore Menu</a>
+          <a href="#" class="btn" style="background: transparent; color: white; text-decoration: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; border: 2px solid white;" onclick="showSection('about', event)">Learn More</a>
+        </div>
+      </section>
+      <section id="about" style="text-align: center; max-width: 800px; margin: 0 auto;">
+        <h2 style="color: #ff6b35; margin-bottom: 2rem;">About CateringPro</h2>
+        <p style="font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.6;">
+          CateringPro is dedicated to promoting traditional Indian culture by connecting rural caterers with customers worldwide. 
+          Our platform empowers local artisans to showcase their culinary skills and reach a global audience.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 3rem;">
+          <div style="padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <i class="fas fa-users" style="font-size: 3rem; color: #ff6b35; margin-bottom: 1rem;"></i>
+            <h3 style="margin-bottom: 1rem;">Community Focus</h3>
+            <p>Supporting rural communities and preserving traditional recipes</p>
+          </div>
+          <div style="padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <i class="fas fa-globe" style="font-size: 3rem; color: #ff6b35; margin-bottom: 1rem;"></i>
+            <h3 style="margin-bottom: 1rem;">Global Reach</h3>
+            <p>Connecting local caterers with customers worldwide</p>
+          </div>
+          <div style="padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <i class="fas fa-heart" style="font-size: 3rem; color: #ff6b35; margin-bottom: 1rem;"></i>
+            <h3 style="margin-bottom: 1rem;">Authentic Flavors</h3>
+            <p>Preserving and promoting traditional Indian cuisine</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- Products Section -->
+    <div id="browse-products-section" class="section">
+      <h2>Browse Products</h2>
+      <div id="browse-products-list"></div>
+    </div>
+    <!-- Product Upload Section -->
+    <div id="user-product-upload-section" class="section">
+      <h2>Upload Product</h2>
+      <form id="user-product-form" class="product-form">
+        <div class="form-group">
+          <label for="user-product-name">Product Name</label>
+          <input type="text" id="user-product-name" required>
+        </div>
+        <div class="form-group">
+          <label for="user-product-price">Price (₹)</label>
+          <input type="number" id="user-product-price" required>
+        </div>
+        <div class="form-group">
+          <label for="user-product-description">Description</label>
+          <textarea id="user-product-description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="user-product-category">Category</label>
+          <select id="user-product-category" required>
+            <option value="">Select Category</option>
+            <option value="appetizers">Appetizers</option>
+            <option value="main-course">Main Course</option>
+            <option value="desserts">Desserts</option>
+            <option value="beverages">Beverages</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="user-product-image">Image URL</label>
+          <input type="url" id="user-product-image" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="form-group">
+          <label for="user-product-tag">Tag</label>
+          <select id="user-product-tag">
+            <option value="">None</option>
+            <option value="local">Local</option>
+            <option value="featured">Featured</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn">Add Product</button>
+        </div>
+      </form>
+    </div>
+    <!-- Profile Section -->
+    <div id="profile-section" class="section">
+      <h2>My Profile</h2>
+      <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h3 style="color: #ff6b35; margin-bottom: 1rem;">Current Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div><strong>Name:</strong> <span id="profile-displayName">Loading...</span></div>
+          <div><strong>Email:</strong> <span id="profile-email-display">Loading...</span></div>
+          <div><strong>Phone:</strong> <span id="profile-phone-display">Loading...</span></div>
+          <div><strong>Address:</strong> <span id="profile-address-display">Loading...</span></div>
+        </div>
+      </div>
+      <form id="profile-form" class="profile-form">
+        <div class="form-group">
+          <label for="profile-name">Full Name</label>
+          <input type="text" id="profile-name" required>
+        </div>
+        <div class="form-group">
+          <label for="profile-email">Email</label>
+          <input type="email" id="profile-email" readonly>
+        </div>
+        <div class="form-group">
+          <label for="profile-phone">Phone</label>
+          <input type="tel" id="profile-phone">
+        </div>
+        <div class="form-group">
+          <label for="profile-address">Address</label>
+          <textarea id="profile-address" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn">Update Profile</button>
+      </form>
+    </div>
+    <!-- Cart Section -->
+    <div id="cart-section" class="section">
+      <h2>My Cart</h2>
+      <div id="cart-items"></div>
+      <div id="cart-summary" class="cart-summary" style="display: none;">
+        <h3>Cart Summary</h3>
+        <p><strong>Subtotal:</strong> ₹<span id="cart-subtotal">0</span></p>
+        <p><strong>Tax:</strong> ₹<span id="cart-tax">0</span></p>
+        <p><strong>Delivery:</strong> ₹<span id="cart-delivery">0</span></p>
+        <p><strong>Total:</strong> ₹<span id="cart-total">0</span></p>
+        <div class="form-group">
+          <label for="orderAddress">Delivery Address</label>
+          <input type="text" id="orderAddress" placeholder="Enter delivery address" required>
+        </div>
+        <button class="btn checkout-btn" onclick="placeOrder()">Place Order</button>
+      </div>
+    </div>
+    <!-- Orders Section -->
+    <div id="orders-section" class="section">
+      <h2>My Orders</h2>
+      <div id="orders-list"></div>
+    </div>
+  </main>
+
+  <script>
+    // Utility Functions
+    function showAlert(message, type = 'info') {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    function updateCartCount() {
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const cartCountElem = document.getElementById('cart-count');
+      if (cartCountElem) cartCountElem.textContent = count;
+    }
+
+    function generateOrderNumber() {
+      const timestamp = Date.now().toString();
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return `ORD${timestamp.slice(-6)}${random}`;
+    }
+
+    let currentUser = null;
+    let userProfile = null;
+    let cart = [];
+    let orders = [];
+
+    // Check authentication
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        loadUserProfile();
+        loadCart();
+        loadOrders();
+      } else {
+        showAlert('You must be logged in to access the dashboard.', 'error');
+        window.location.href = 'index.html';
+      }
+    });
+
+    function showSection(sectionName, event) {
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      // Show selected section if it exists
+      const section = document.getElementById(sectionName + '-section');
+      if (section) {
+        section.classList.add('active');
+      } else {
+        // If section doesn't exist, show home-section as fallback
+        document.getElementById('home-section').classList.add('active');
+      }
+      // Update sidebar active state
+      document.querySelectorAll('.nav-menu a').forEach(link => {
+        link.classList.remove('active');
+      });
+      if (event && event.target && event.target.classList) {
+        event.target.classList.add('active');
+      }
+    }
+
+    async function loadUserProfile() {
+      try {
+        const userDoc = await firebase.firestore().collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+          userProfile = userDoc.data();
+        } else {
+          userProfile = {
+            displayName: currentUser.displayName || '',
+            email: currentUser.email,
+            phone: '',
+            address: ''
+          };
+          await firebase.firestore().collection('users').doc(currentUser.uid).set(userProfile);
+        }
+        populateProfileForm();
+        updateProfileInfoDisplay();
+      } catch (error) {
+        showAlert('Error loading profile', 'error');
+      }
+    }
+
+    function populateProfileForm() {
+      document.getElementById('profile-name').value = userProfile.displayName || '';
+      document.getElementById('profile-email').value = currentUser.email;
+      document.getElementById('profile-phone').value = userProfile.phone || '';
+      document.getElementById('profile-address').value = userProfile.address || '';
+    }
+
+    // Profile form submission
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const profileData = {
+        displayName: document.getElementById('profile-name').value,
+        phone: document.getElementById('profile-phone').value,
+        address: document.getElementById('profile-address').value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      try {
+        await firebase.firestore().collection('users').doc(currentUser.uid).update(profileData);
+        await currentUser.updateProfile({ displayName: profileData.displayName });
+        showAlert('Profile updated successfully!', 'success');
+        loadUserProfile();
+      } catch (error) {
+        showAlert('Error updating profile', 'error');
+      }
+    });
+
+    async function loadCart() {
+      try {
+        const cartDoc = await firebase.firestore().collection('carts').doc(currentUser.uid).get();
+        if (cartDoc.exists) {
+          cart = cartDoc.data().items || [];
+        } else {
+          cart = [];
+        }
+        renderCart();
+        updateCartCount();
+      } catch (error) {
+        showAlert('Error loading cart', 'error');
+      }
+    }
+
+    function renderCart() {
+      const cartContainer = document.getElementById('cart-items');
+      const cartSummary = document.getElementById('cart-summary');
+      if (cart.length === 0) {
+        cartContainer.innerHTML = '<p>Your cart is empty. <a href="#" onclick="showSection(\'browse-products\', event)">Start shopping!</a></p>';
+        cartSummary.style.display = 'none';
+        return;
+      }
+      cartContainer.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.imageUrl || 'https://via.placeholder.com/80x80?text=No+Image'}" alt="${item.name}">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">₹${item.price}</div>
+          </div>
+          <div class="quantity-controls">
+            <button class="quantity-btn" onclick="updateQuantity('${item.id}', ${item.quantity - 1})">-</button>
+            <span>${item.quantity}</span>
+            <button class="quantity-btn" onclick="updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+          </div>
+          <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+        </div>
+      `).join('');
+      updateCartSummary();
+      cartSummary.style.display = 'block';
+    }
+
+    function updateCartSummary() {
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const tax = subtotal * 0.1;
+      const delivery = subtotal > 0 ? 50 : 0;
+      const total = subtotal + tax + delivery;
+      document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
+      document.getElementById('cart-tax').textContent = tax.toFixed(2);
+      document.getElementById('cart-delivery').textContent = delivery.toFixed(2);
+      document.getElementById('cart-total').textContent = total.toFixed(2);
+    }
+
+    async function updateQuantity(productId, newQuantity) {
+      if (newQuantity <= 0) {
+        removeFromCart(productId);
+        return;
+      }
+      const itemIndex = cart.findIndex(item => item.id === productId);
+      if (itemIndex !== -1) {
+        cart[itemIndex].quantity = newQuantity;
+        await saveCart();
+        renderCart();
+      }
+    }
+
+    async function removeFromCart(productId) {
+      cart = cart.filter(item => item.id !== productId);
+      await saveCart();
+      renderCart();
+      updateCartCount();
+    }
+
+    async function saveCart() {
+      try {
+        await firebase.firestore().collection('carts').doc(currentUser.uid).set({
+          items: cart,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (error) {
+        showAlert('Error saving cart', 'error');
+      }
+    }
+
+    async function loadOrders() {
+      try {
+        if (!currentUser) {
+          showAlert('User not authenticated', 'error');
+          return;
+        }
+        const snapshot = await firebase.firestore().collection('orders')
+          .where('userId', '==', currentUser.uid)
+          .orderBy('createdAt', 'desc')
+          .get();
+        orders = [];
+        snapshot.forEach(doc => {
+          orders.push({ id: doc.id, ...doc.data() });
+        });
+        renderOrders();
+      } catch (error) {
+        showAlert('Error loading orders: ' + error.message, 'error');
+        orders = [];
+        renderOrders();
+      }
+    }
+
+    function renderOrders() {
+      const ordersContainer = document.getElementById('orders-list');
+      if (orders.length === 0) {
+        ordersContainer.innerHTML = '<p>No orders found. <a href="#" onclick="showSection(\'browse-products\', event)">Start shopping!</a></p>';
+        return;
+      }
+      ordersContainer.innerHTML = orders.map(order => `
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-number">Order #${order.orderNumber || order.id}</div>
+            <div class="order-status status-${order.status}">
+              <span class="status-badge status-badge-${order.status}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+            </div>
+          </div>
+          <div class="order-items">
+            ${order.items ? order.items.map(item => `
+              <div class="order-item">
+                <span>${item.name} x${item.quantity}</span>
+                <span>₹${item.price * item.quantity}</span>
+              </div>
+            `).join('') : 'No items'}
+          </div>
+          <div class="order-total">Total: ₹${order.total || 0}</div>
+          <small>Ordered on: ${order.createdAt && order.createdAt.toDate ? new Date(order.createdAt.toDate()).toLocaleDateString() : 'N/A'}</small>
+        </div>
+      `).join('');
+    }
+
+    // Product upload for users
+    document.getElementById('user-product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
+      try {
+        const name = document.getElementById('user-product-name').value.trim();
+        const price = parseFloat(document.getElementById('user-product-price').value);
+        const description = document.getElementById('user-product-description').value.trim();
+        const category = document.getElementById('user-product-category').value;
+        if (!name || !price || !description || !category) {
+          showAlert('Please fill in all product fields.', 'error');
+          return;
+        }
+        const productData = {
+          name,
+          price,
+          description,
+          category,
+          imageUrl: document.getElementById('user-product-image').value,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdBy: currentUser.uid
+        };
+        const tag = document.getElementById('user-product-tag').value;
+        if (tag) {
+          productData.tag = tag;
+        }
+        await firebase.firestore().collection('products').add(productData);
+        showAlert('Product added successfully!', 'success');
+        document.getElementById('user-product-form').reset();
+        // Refresh the products list to show the newly added product
+        loadApprovedProducts();
+      } catch (error) {
+        showAlert('Error adding product', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    // Place order function
+    async function placeOrder() {
+      const btn = document.querySelector('.checkout-btn');
+      if (btn) btn.disabled = true;
+      try {
+        if (!currentUser) {
+          showAlert('You must be logged in to place an order.', 'error');
+          return;
+        }
+        if (cart.length === 0) {
+          showAlert('Your cart is empty!', 'error');
+          return;
+        }
+        const addressInput = document.getElementById('orderAddress');
+        const address = addressInput ? addressInput.value.trim() : '';
+        if (!address) {
+          showAlert('Please enter a delivery address.', 'error');
+          if (addressInput) addressInput.focus();
+          return;
+        }
+        const orderData = {
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          customerName: userProfile?.displayName || currentUser.displayName || currentUser.email,
+          items: cart,
+          subtotal: parseFloat(document.getElementById('cart-subtotal').textContent),
+          tax: parseFloat(document.getElementById('cart-tax').textContent),
+          deliveryCharge: parseFloat(document.getElementById('cart-delivery').textContent),
+          total: parseFloat(document.getElementById('cart-total').textContent),
+          address: address,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          orderNumber: generateOrderNumber()
+        };
+        await firebase.firestore().collection('orders').add(orderData);
+        showAlert('Order placed successfully!', 'success');
+        cart = [];
+        await saveCart();
+        renderCart();
+        updateCartCount();
+        if (addressInput) addressInput.value = '';
+        loadOrders();
+      } catch (error) {
+        showAlert('Error placing order', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'index.html';
+      }).catch((error) => {
+        showAlert('Error logging out', 'error');
+      });
+    }
+
+    // Load and display all approved products (including admin-added)
+    async function loadApprovedProducts() {
+      try {
+        // Load active products (approved by admin)
+        const activeSnapshot = await firebase.firestore().collection('products').where('status', '==', 'active').get();
+        const products = [];
+        activeSnapshot.forEach(doc => {
+          products.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Also load user's own products (pending or active)
+        if (currentUser) {
+          const userProductsSnapshot = await firebase.firestore().collection('products').where('createdBy', '==', currentUser.uid).get();
+          userProductsSnapshot.forEach(doc => {
+            const product = { id: doc.id, ...doc.data() };
+            // Only add if not already in the list (avoid duplicates)
+            if (!products.find(p => p.id === product.id)) {
+              products.push(product);
+            }
+          });
+        }
+        
+        renderBrowseProducts(products);
+      } catch (error) {
+        showAlert('Error loading products: ' + error.message, 'error');
+      }
+    }
+
+    function renderBrowseProducts(products) {
+      const list = document.getElementById('browse-products-list');
+      if (!list) return;
+      if (!products.length) {
+        list.innerHTML = '<p style="color:#888;">No products available.</p>';
+        return;
+      }
+      list.innerHTML = `
+        <div class="products-grid">
+          ${products.map(product => `
+            <div class="product-card">
+              <img src="${product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.name}" class="product-image">
+              <div class="product-info">
+                <h3 class="product-name">${product.name}
+                  ${product.tag ? `<span class='badge badge-${product.tag}'>${product.tag.charAt(0).toUpperCase() + product.tag.slice(1)}</span>` : ''}
+                  ${product.status === 'pending' ? `<span class='badge badge-pending'>Pending Approval</span>` : ''}
+                </h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-price">₹${product.price}</div>
+                <div class="product-actions">
+                  ${product.status === 'active' ? `
+                    <button class="btn btn-add-cart" onclick="addToCartFromBrowse('${product.id}')">
+                      <i class="fas fa-cart-plus"></i> Add to Cart
+                    </button>
+                  ` : `
+                    <button class="btn" style="background: #6c757d; cursor: not-allowed;" disabled>
+                      <i class="fas fa-clock"></i> Pending Approval
+                    </button>
+                  `}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      // Add badge styles if not present
+      if (!document.getElementById('badge-styles')) {
+        const style = document.createElement('style');
+        style.id = 'badge-styles';
+        style.innerHTML = `
+          .badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 8px; font-size: 0.8em; font-weight: 600; }
+          .badge-featured { background: #ff6b35; color: #fff; }
+          .badge-local { background: #28a745; color: #fff; }
+          .badge-pending { background: #ffc107; color: #212529; }
+        `;
+        document.head.appendChild(style);
+      }
+    }
+
+    // Add to cart from browse section
+    async function addToCartFromBrowse(productId) {
+      // Load product details
+      const doc = await firebase.firestore().collection('products').doc(productId).get();
+      if (!doc.exists) return;
+      const product = doc.data();
+      // Load current cart
+      let cartDoc = await firebase.firestore().collection('carts').doc(currentUser.uid).get();
+      let cart = cartDoc.exists ? (cartDoc.data().items || []) : [];
+      const existingItem = cart.find(item => item.id === productId);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({
+          id: productId,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          quantity: 1,
+          tag: product.tag || ''
+        });
+      }
+      await firebase.firestore().collection('carts').doc(currentUser.uid).set({
+        items: cart,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showAlert('Added to cart successfully!', 'success');
+      loadCart();
+      updateCartCount(); // Call this after adding to cart
+    }
+
+    // Load products on dashboard load
+    loadApprovedProducts();
+  </script>
+  <script>
+    // Simplified section management
+    window.addEventListener('DOMContentLoaded', () => {
+      // Ensure home section is active on load
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      const homeSection = document.getElementById('home-section');
+      if (homeSection) homeSection.classList.add('active');
+    });
+  </script>
+  <script>
+    // Add JS to update profile info display
+    function updateProfileInfoDisplay() {
+      const displayName = userProfile?.displayName || currentUser?.displayName || 'Not set';
+      const email = currentUser?.email || 'Not set';
+      const phone = userProfile?.phone || 'Not set';
+      const address = userProfile?.address || 'Not set';
+      
+      document.getElementById('profile-displayName').textContent = displayName;
+      document.getElementById('profile-email-display').textContent = email;
+      document.getElementById('profile-phone-display').textContent = phone;
+      document.getElementById('profile-address-display').textContent = address;
+    }
+    // Call updateProfileInfoDisplay() after userProfile is loaded
+    // In loadUserProfile, after populateProfileForm(), add:
+    // updateProfileInfoDisplay();
+  </script>
+</body>
+</html> 

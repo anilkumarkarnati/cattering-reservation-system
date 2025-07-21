@@ -1,0 +1,21 @@
+{
+  "name": "my-v0-project",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'no build script'"
+  },
+  "dependencies": {
+    "firebase": "^11.10.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "eslint": "^9.31.0"
+  },
+  "description": "A comprehensive web-based catering management system built with HTML, CSS, JavaScript, and Firebase. This system allows users to browse catering services, place orders, and enables administrators to manage products, orders, and users efficiently.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

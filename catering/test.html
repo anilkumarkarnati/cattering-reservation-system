@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaterHub - System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>CaterHub System Test</h1>
+    
+    <div class="test-section">
+        <h2>Firebase Connection Test</h2>
+        <button onclick="testFirebaseConnection()">Test Firebase Connection</button>
+        <div id="firebase-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Authentication Test</h2>
+        <button onclick="testAuthentication()">Test Authentication</button>
+        <div id="auth-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Database Operations Test</h2>
+        <button onclick="testDatabaseOperations()">Test Database Operations</button>
+        <div id="db-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Product Management Test</h2>
+        <button onclick="testProductManagement()">Test Product Management</button>
+        <div id="product-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Cart Functionality Test</h2>
+        <button onclick="testCartFunctionality()">Test Cart Functionality</button>
+        <div id="cart-result"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/logger.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+
+    <script>
+        // Test Firebase Connection
+        async function testFirebaseConnection() {
+            const resultDiv = document.getElementById('firebase-result');
+            try {
+                // Test if Firebase is initialized
+                if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                    resultDiv.innerHTML = '<div class="test-result success">✓ Firebase initialized successfully</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="test-result error">✗ Firebase not initialized</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result error">✗ Firebase connection error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Authentication
+        async function testAuthentication() {
+            const resultDiv = document.getElementById('auth-result');
+            try {
+                // Test auth state listener
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (user) {
+                        resultDiv.innerHTML = `<div class="test-result success">✓ User authenticated: ${user.email}</div>`;
+                    } else {
+                        resultDiv.innerHTML = '<div class="test-result warning">⚠ No user authenticated (this is normal for testing)</div>';
+                    }
+                });
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result error">✗ Authentication error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Database Operations
+        async function testDatabaseOperations() {
+            const resultDiv = document.getElementById('db-result');
+            try {
+                // Test Firestore connection
+                const testDoc = await firebase.firestore().collection('test').doc('connection').get();
+                resultDiv.innerHTML = '<div class="test-result success">✓ Firestore connection successful</div>';
+            } catch (error) {
+                if (error.code === 'permission-denied') {
+                    resultDiv.innerHTML = '<div class="test-result warning">⚠ Firestore connected but permission denied (normal without auth)</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="test-result error">✗ Firestore error: ${error.message}</div>`;
+                }
+            }
+        }
+
+        // Test Product Management
+        async function testProductManagement() {
+            const resultDiv = document.getElementById('product-result');
+            try {
+                if (window.productManager) {
+                    resultDiv.innerHTML = '<div class="test-result success">✓ Product manager initialized</div>';
+                    
+                    // Test product loading
+                    await window.productManager.loadProducts();
+                    resultDiv.innerHTML += '<div class="test-result success">✓ Product loading function works</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="test-result error">✗ Product manager not initialized</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result error">✗ Product management error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Cart Functionality
+        async function testCartFunctionality() {
+            const resultDiv = document.getElementById('cart-result');
+            try {
+                if (window.cartManager) {
+                    resultDiv.innerHTML = '<div class="test-result success">✓ Cart manager initialized</div>';
+                    
+                    // Test adding item to cart
+                    const testProduct = {
+                        id: 'test-1',
+                        name: 'Test Product',
+                        price: 100,
+                        imageUrl: '/placeholder.svg'
+                    };
+                    
+                    window.cartManager.addItem(testProduct);
+                    
+                    if (window.cartManager.getItemCount() > 0) {
+                        resultDiv.innerHTML += '<div class="test-result success">✓ Add to cart functionality works</div>';
+                        
+                        // Clean up test
+                        window.cartManager.clearCart();
+                        resultDiv.innerHTML += '<div class="test-result success">✓ Clear cart functionality works</div>';
+                    } else {
+                        resultDiv.innerHTML += '<div class="test-result error">✗ Add to cart not working</div>';
+                    }
+                } else {
+                    resultDiv.innerHTML = '<div class="test-result error">✗ Cart manager not initialized</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result error">✗ Cart functionality error: ${error.message}</div>`;
+            }
+        }
+
+        // Run all tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testFirebaseConnection();
+                testAuthentication();
+                testDatabaseOperations();
+                testProductManagement();
+                testCartFunctionality();
+            }, 2000); // Wait for all scripts to load
+        });
+    </script>
+</body>
+</html>
